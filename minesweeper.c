@@ -25,6 +25,7 @@ static int playing = 1;
  * 2 - complete
 */
 static int exitmsg = 0;
+static int quitscr = 0;
 
 typedef struct {
     int value, hidden, marked;
@@ -148,7 +149,7 @@ void printgrid(cell **grid, int highlight, int act){
      * act:
      * 1 - reveal
      * 2 - flag
-     * 3 - potential
+     * 3 - quit
     */
     if(act == 1){
         // can't reveal marked cells
@@ -169,89 +170,98 @@ void printgrid(cell **grid, int highlight, int act){
     int i, j;
     int row, col;
     getmaxyx(stdscr, row, col);
-    int offx = (col - 20) / 2;
-    int offy = row / 2;
-    start_color();
-    /* colours */
-    init_pair(1, COLOR_RED,     COLOR_BLACK); /* failure */
-    init_pair(2, COLOR_GREEN,   COLOR_BLACK); /* 1s */
-    init_pair(3, COLOR_YELLOW,  COLOR_BLACK); /* 2s */
-    init_pair(4, COLOR_BLUE,    COLOR_BLACK); /* 3s */
-    init_pair(5, COLOR_MAGENTA, COLOR_BLACK); /* 4s */
-    init_pair(6, COLOR_CYAN,    COLOR_BLACK); /* 5s */
-    for(j = 1; j < GRIDY+1; j++){
-        for(i = 1; i < GRIDX+1; i++){
-            if(debug){
-                mvprintw((offy+j)-5, offx+(i*2), "%d", grid[GRIDX*j+i]->value);
-            } else if(grid[GRIDX*j+i]->hidden == 1 && grid[GRIDX*j+i]->marked == 0){
-                // for hidden cells
-                if(highlight == GRIDX*j+i){
-                    // highlight this square
-                    wattron(stdscr, A_REVERSE);
-                    mvprintw((offy+j)-5, offx+(i*2), "-");
-                    wattroff(stdscr, A_REVERSE);
+    if(act == 3){
+        // user wishes to quit
+        quitscr = 1;
+        mvprintw(row/2, (col-36)/2, "Are you sure you want to quit? [Y\\n]");
+    } else {
+        int offx = (col - 20) / 2;
+        int offy = row / 2;
+        start_color();
+        /* colours */
+        init_pair(1, COLOR_RED,     COLOR_BLACK); /* failure */
+        init_pair(2, COLOR_GREEN,   COLOR_BLACK); /* 1s */
+        init_pair(3, COLOR_YELLOW,  COLOR_BLACK); /* 2s */
+        init_pair(4, COLOR_BLUE,    COLOR_BLACK); /* 3s */
+        init_pair(5, COLOR_MAGENTA, COLOR_BLACK); /* 4s */
+        init_pair(6, COLOR_CYAN,    COLOR_BLACK); /* 5s */
+        for(j = 1; j < GRIDY+1; j++){
+            for(i = 1; i < GRIDX+1; i++){
+                if(debug){
+                    mvprintw((offy+j)-5, offx+(i*2), "%d", grid[GRIDX*j+i]->value);
+                } else if(grid[GRIDX*j+i]->hidden == 1 && grid[GRIDX*j+i]->marked == 0){
+                    // for hidden cells
+                    if(highlight == GRIDX*j+i){
+                        // highlight this square
+                        wattron(stdscr, A_REVERSE);
+                        mvprintw((offy+j)-5, offx+(i*2), "-");
+                        wattroff(stdscr, A_REVERSE);
+                    } else {
+                        mvprintw((offy+j)-5, offx+(i*2), "-");
+                    }
+                } else if(grid[GRIDX*j+i]->marked == 1){
+                    // for marked cells
+                    if(highlight == GRIDX*j+i){
+                        // highlighted
+                        wattron(stdscr, A_REVERSE);
+                        mvprintw((offy+j)-5, offx+(i*2), "F");
+                        wattroff(stdscr, A_REVERSE);
+                    } else {
+                        attron(COLOR_PAIR(1));
+                        mvprintw((offy+j)-5, offx+(i*2), "F");
+                        attroff(COLOR_PAIR(1));
+                    }
                 } else {
-                    mvprintw((offy+j)-5, offx+(i*2), "-");
-                }
-            } else if(grid[GRIDX*j+i]->marked == 1){
-                // for marked cells
-                if(highlight == GRIDX*j+i){
-                    wattron(stdscr, A_REVERSE);
-                    mvprintw((offy+j)-5, offx+(i*2), "F");
-                    wattroff(stdscr, A_REVERSE);
-                } else {
-                    mvprintw((offy+j)-5, offx+(i*2), "F");
-                }
-            } else {
-                int val = grid[GRIDX*j+i]->value;
-                if(highlight == GRIDX*j+i){
-                    // highlight this square
-                    wattron(stdscr, A_REVERSE);
-                    if(val == -1)
-                        mvprintw((offy+j)-5, offx+(i*2), "M", val);
-                    else
-                        mvprintw((offy+j)-5, offx+(i*2), "%d", val);
-                    wattroff(stdscr, A_REVERSE);
-                } else {
-                    switch(val){
-                        case -1:
-                            attron(COLOR_PAIR(1));
-                            mvprintw((offy+j)-5, offx+(i*2), "M");
-                            attroff(COLOR_PAIR(1));
-                            break;
-                        case 1:
-                            attron(COLOR_PAIR(2));
+                    int val = grid[GRIDX*j+i]->value;
+                    if(highlight == GRIDX*j+i){
+                        // highlight this square
+                        wattron(stdscr, A_REVERSE);
+                        if(val == -1)
+                            mvprintw((offy+j)-5, offx+(i*2), "M", val);
+                        else
                             mvprintw((offy+j)-5, offx+(i*2), "%d", val);
-                            attroff(COLOR_PAIR(2));
-                            break;
-                        case 2:
-                            attron(COLOR_PAIR(3));
-                            mvprintw((offy+j)-5, offx+(i*2), "%d", val);
-                            attroff(COLOR_PAIR(3));
-                            break;
-                        case 3:
-                            attron(COLOR_PAIR(4));
-                            mvprintw((offy+j)-5, offx+(i*2), "%d", val);
-                            attroff(COLOR_PAIR(4));
-                            break;
-                        case 4:
-                            attron(COLOR_PAIR(5));
-                            mvprintw((offy+j)-5, offx+(i*2), "%d", val);
-                            attroff(COLOR_PAIR(5));
-                            break;
-                        case 5:
-                            attron(COLOR_PAIR(6));
-                            mvprintw((offy+j)-5, offx+(i*2), "%d", val);
-                            attroff(COLOR_PAIR(6));
-                            break;
-                        default:
-                            mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                        wattroff(stdscr, A_REVERSE);
+                    } else {
+                        switch(val){
+                            case -1:
+                                attron(COLOR_PAIR(1));
+                                mvprintw((offy+j)-5, offx+(i*2), "M");
+                                attroff(COLOR_PAIR(1));
+                                break;
+                            case 1:
+                                attron(COLOR_PAIR(2));
+                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                attroff(COLOR_PAIR(2));
+                                break;
+                            case 2:
+                                attron(COLOR_PAIR(3));
+                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                attroff(COLOR_PAIR(3));
+                                break;
+                            case 3:
+                                attron(COLOR_PAIR(4));
+                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                attroff(COLOR_PAIR(4));
+                                break;
+                            case 4:
+                                attron(COLOR_PAIR(5));
+                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                attroff(COLOR_PAIR(5));
+                                break;
+                            case 5:
+                                attron(COLOR_PAIR(6));
+                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                attroff(COLOR_PAIR(6));
+                                break;
+                            default:
+                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                        }
                     }
                 }
             }
         }
     }
-    mvprintw(row-2, 0, "curr: %d", highlight);
+    mvprintw(row-2, 0, "[R]eveal\t[F]lag\t\t[ESC] Quit");
     refresh();
 }
 
@@ -291,37 +301,59 @@ int main(void){
     while(playing == 1){
         act = 0;
         c   = wgetch(stdscr);
-        switch(c){
-            case KEY_DOWN:
-                if(curr > GRIDX*GRIDY)
-                    curr = curr % ((GRIDX*GRIDY)-GRIDX);
-                else
-                    curr += GRIDX;
-                break;
-            case KEY_UP:
-                if(curr <= 2*GRIDX)
-                    curr = (GRIDY*GRIDX)+(curr - GRIDX);
-                else
-                    curr -= GRIDX;
-                break;
-            case KEY_RIGHT:
-                if((curr)%10 == 0)
-                    curr = curr - (GRIDX-1);
-                else
-                    curr += 1;
-                break;
-            case KEY_LEFT:
-                if((curr-1)%10 == 0)
-                    curr = curr + (GRIDX-1);
-                else
-                    curr -= 1;
-                break;
-            case 114:
-                act = 1;
-                break;
-            case 102:
-                act = 2;
-                break;
+        if(quitscr == 1){
+            switch(c){
+                case 121:
+                    // quit
+                    playing = 0;
+                    exitmsg = 3;
+                    break;
+                case 110:
+                    quitscr = 0;
+                    break;
+                default:
+                    playing = 0;
+                    exitmsg = 3;
+            }
+        } else {
+            switch(c){
+                case KEY_DOWN:
+                    if(curr > GRIDX*GRIDY)
+                        curr = curr % ((GRIDX*GRIDY)-GRIDX);
+                    else
+                        curr += GRIDX;
+                    break;
+                case KEY_UP:
+                    if(curr <= 2*GRIDX)
+                        curr = (GRIDY*GRIDX)+(curr - GRIDX);
+                    else
+                        curr -= GRIDX;
+                    break;
+                case KEY_RIGHT:
+                    if((curr)%10 == 0)
+                        curr = curr - (GRIDX-1);
+                    else
+                        curr += 1;
+                    break;
+                case KEY_LEFT:
+                    if((curr-1)%10 == 0)
+                        curr = curr + (GRIDX-1);
+                    else
+                        curr -= 1;
+                    break;
+                case 114:
+                    // reveal
+                    act = 1;
+                    break;
+                case 102:
+                    // flag
+                    act = 2;
+                    break;
+                case 27:
+                    // quitscreen
+                    act = 3;
+                    break;
+            }
         }
         clear();
         printgrid(grid, curr, act);
@@ -329,8 +361,14 @@ int main(void){
         checkreveal(grid);
     }
     clear();
-    printexit();
-    getch();
+    if(exitmsg == 3){
+        // just end
+        endwin();
+        return 0;
+    } else {
+        printexit();
+        getch();
+    }
     endwin();
     return 0;
 }
