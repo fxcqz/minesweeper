@@ -42,6 +42,28 @@ void creategrid(cell **grid){
     }
 }
 
+void countmines(cell **grid, int loc){
+    if(grid[loc - (GRIDX + 1)]->value != -1) grid[loc - (GRIDX + 1)]->value += 1;
+    if(grid[loc - (GRIDX)]->value     != -1) grid[loc - (GRIDX)]->value     += 1;
+    if(grid[loc - (GRIDX - 1)]->value != -1) grid[loc - (GRIDX - 1)]->value += 1;
+    if(grid[loc - 1]->value           != -1) grid[loc - 1]->value           += 1;
+    if(grid[loc + 1]->value           != -1) grid[loc + 1]->value           += 1;
+    if(grid[loc + (GRIDX + 1)]->value != -1) grid[loc + (GRIDX + 1)]->value += 1;
+    if(grid[loc + (GRIDX)]->value     != -1) grid[loc + (GRIDX)]->value     += 1;
+    if(grid[loc + (GRIDX - 1)]->value != -1) grid[loc + (GRIDX - 1)]->value += 1;
+    /* no wrap */
+    if((loc-1)%GRIDX == 0){
+        if(grid[loc-(GRIDX+1)]->value > 0) grid[loc-(GRIDX+1)]->value -= 1;
+        if(grid[loc- 1]->value        > 0) grid[loc - 1]->value       -= 1;
+        if(grid[loc+(GRIDX-1)]->value > 0) grid[loc+(GRIDX-1)]->value -= 1;
+    }
+    if(loc % GRIDX == 0){
+        if(grid[loc-(GRIDX-1)]->value > 0) grid[loc-(GRIDX-1)]->value -= 1;
+        if(grid[loc + 1]->value       > 0) grid[loc + 1]->value       -= 1;
+        if(grid[loc+(GRIDX+1)]->value > 0) grid[loc+(GRIDX+1)]->value -= 1;
+    }
+}
+
 void addmines(cell **grid){
     /*
      * Bounds:
@@ -62,6 +84,7 @@ void addmines(cell **grid){
                     fclose(fp);
                 }
                 grid[coord]->value = -1;
+                countmines(grid, coord);
                 count++;
             }
         }
@@ -76,21 +99,56 @@ void addmines(cell **grid){
 void printgrid(cell **grid){
     int i, j;
     start_color();
-    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(1, COLOR_RED,     COLOR_BLACK); /* failure */
+    init_pair(2, COLOR_GREEN,   COLOR_BLACK); /* 1s */
+    init_pair(3, COLOR_YELLOW,  COLOR_BLACK); /* 2s */
+    init_pair(4, COLOR_BLUE,    COLOR_BLACK); /* 3s */
+    init_pair(5, COLOR_MAGENTA, COLOR_BLACK); /* 4s */
+    init_pair(6, COLOR_CYAN,    COLOR_BLACK); /* 5s */
     for(j = 1; j < GRIDY+1; j++){
         for(i = 1; i < GRIDX+1; i++){
             if(grid[GRIDX*j+i]->value == -1){
-                attron(COLOR_PAIR(1));
                 if(debug)
                     printw("(%d) M ", GRIDX*j+i);
                 else
                     printw("M ");
-                attroff(COLOR_PAIR(1));
             } else {
-                if(debug)
+                if(debug){
                     printw("(%d) %d ", GRIDX*j+i, grid[GRIDX*j+i]->value);
-                else
-                    printw("%d ", grid[GRIDX*j+i]->value);
+                } else {
+                    int val = grid[GRIDX*j+i]->value;
+                    switch(val){
+                        case 1:
+                            attron(COLOR_PAIR(2));
+                            printw("%d ", val);
+                            attroff(COLOR_PAIR(2));
+                            break;
+                        case 2:
+                            attron(COLOR_PAIR(3));
+                            printw("%d ", val);
+                            attroff(COLOR_PAIR(3));
+                            break;
+                        case 3:
+                            attron(COLOR_PAIR(4));
+                            printw("%d ", val);
+                            attroff(COLOR_PAIR(4));
+                            break;
+                        case 4:
+                            attron(COLOR_PAIR(5));
+                            printw("%d ", val);
+                            attroff(COLOR_PAIR(5));
+                            break;
+                        case 5:
+                            attron(COLOR_PAIR(6));
+                            printw("%d ", val);
+                            attroff(COLOR_PAIR(6));
+                            break;
+                        default:
+                            attron(COLOR_PAIR(1));
+                            printw("%d ", val);
+                            attroff(COLOR_PAIR(1));
+                    }
+                }
             }
         }
         printw("\n");
