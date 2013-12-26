@@ -1,3 +1,9 @@
+
+/*
+ * Great ncurses resource
+ * http://www.tldp.org/HOWTO/NCURSES-Programming-HOWTO/index.html
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -73,8 +79,6 @@ void addmines(cell **grid){
     int count = 0;
     FILE *fp;
     while(count < MINES){
-        /*int x = rand_lim(GRIDX) + 1;
-        int y = rand_lim(GRIDY);*/
         int coord = rand_lim((GRIDY*GRIDX)+GRIDX);
         if(coord > GRIDX){
             if(grid[coord]->value != -1){
@@ -96,9 +100,14 @@ void addmines(cell **grid){
     }
 }
 
-void printgrid(cell **grid){
+void printgrid(cell **grid, int highlight, int act){
     int i, j;
+    int row, col;
+    getmaxyx(stdscr, row, col);
+    int offx = (col - 20) / 2;
+    int offy = row / 2;
     start_color();
+    /* colours */
     init_pair(1, COLOR_RED,     COLOR_BLACK); /* failure */
     init_pair(2, COLOR_GREEN,   COLOR_BLACK); /* 1s */
     init_pair(3, COLOR_YELLOW,  COLOR_BLACK); /* 2s */
@@ -107,51 +116,46 @@ void printgrid(cell **grid){
     init_pair(6, COLOR_CYAN,    COLOR_BLACK); /* 5s */
     for(j = 1; j < GRIDY+1; j++){
         for(i = 1; i < GRIDX+1; i++){
-            if(grid[GRIDX*j+i]->value == -1){
-                if(debug)
-                    printw("(%d) M ", GRIDX*j+i);
-                else
-                    printw("M ");
+            if(debug){
+                mvprintw((offy+j)-5, offx+(i*2), "(%d) %d ", GRIDX*j+i, grid[GRIDX*j+i]->value);
             } else {
-                if(debug){
-                    printw("(%d) %d ", GRIDX*j+i, grid[GRIDX*j+i]->value);
-                } else {
-                    int val = grid[GRIDX*j+i]->value;
-                    switch(val){
-                        case 1:
-                            attron(COLOR_PAIR(2));
-                            printw("%d ", val);
-                            attroff(COLOR_PAIR(2));
-                            break;
-                        case 2:
-                            attron(COLOR_PAIR(3));
-                            printw("%d ", val);
-                            attroff(COLOR_PAIR(3));
-                            break;
-                        case 3:
-                            attron(COLOR_PAIR(4));
-                            printw("%d ", val);
-                            attroff(COLOR_PAIR(4));
-                            break;
-                        case 4:
-                            attron(COLOR_PAIR(5));
-                            printw("%d ", val);
-                            attroff(COLOR_PAIR(5));
-                            break;
-                        case 5:
-                            attron(COLOR_PAIR(6));
-                            printw("%d ", val);
-                            attroff(COLOR_PAIR(6));
-                            break;
-                        default:
-                            attron(COLOR_PAIR(1));
-                            printw("%d ", val);
-                            attroff(COLOR_PAIR(1));
-                    }
+                int val = grid[GRIDX*j+i]->value;
+                switch(val){
+                    case -1:
+                        attron(COLOR_PAIR(1));
+                        mvprintw((offy+j)-5, offx+(i*2), "M ");
+                        attroff(COLOR_PAIR(1));
+                        break;
+                    case 1:
+                        attron(COLOR_PAIR(2));
+                        mvprintw((offy+j)-5, offx+(i*2), "%d ", val);
+                        attroff(COLOR_PAIR(2));
+                        break;
+                    case 2:
+                        attron(COLOR_PAIR(3));
+                        mvprintw((offy+j)-5, offx+(i*2), "%d ", val);
+                        attroff(COLOR_PAIR(3));
+                        break;
+                    case 3:
+                        attron(COLOR_PAIR(4));
+                        mvprintw((offy+j)-5, offx+(i*2), "%d ", val);
+                        attroff(COLOR_PAIR(4));
+                        break;
+                    case 4:
+                        attron(COLOR_PAIR(5));
+                        mvprintw((offy+j)-5, offx+(i*2), "%d ", val);
+                        attroff(COLOR_PAIR(5));
+                        break;
+                    case 5:
+                        attron(COLOR_PAIR(6));
+                        mvprintw((offy+j)-5, offx+(i*2), "%d ", val);
+                        attroff(COLOR_PAIR(6));
+                        break;
+                    default:
+                        mvprintw((offy+j)-5, offx+(i*2), "%d ", val);
                 }
             }
         }
-        printw("\n");
     }
 }
 
@@ -166,7 +170,7 @@ int main(void){
     noecho();
     cbreak();
     curs_set(0);
-    printgrid(grid);
+    printgrid(grid, 11, 2);
     refresh();
     getch();
     endwin();
