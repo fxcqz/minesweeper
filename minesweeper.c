@@ -1,5 +1,8 @@
 
 /*
+ * Compile with
+ * gcc -o main minesweeper.c -lncurses
+ *
  * Great ncurses resource
  * http://www.tldp.org/HOWTO/NCURSES-Programming-HOWTO/index.html
 */
@@ -59,6 +62,7 @@ void creategrid(cell **grid){
 }
 
 void countmines(cell **grid, int loc){
+    // surrounding mines
     if(grid[loc - (GRIDX + 1)]->value != -1) grid[loc - (GRIDX + 1)]->value += 1;
     if(grid[loc - (GRIDX)]->value     != -1) grid[loc - (GRIDX)]->value     += 1;
     if(grid[loc - (GRIDX - 1)]->value != -1) grid[loc - (GRIDX - 1)]->value += 1;
@@ -188,7 +192,10 @@ void printgrid(cell **grid, int highlight, int act){
         for(j = 1; j < GRIDY+1; j++){
             for(i = 1; i < GRIDX+1; i++){
                 if(debug){
-                    mvprintw((offy+j)-5, offx+(i*2), "%d", grid[GRIDX*j+i]->value);
+                    if(grid[GRIDX*j+i]->value == -1)
+                        mvprintw((offy+j)-5, offx+(i*2), "M", grid[GRIDX*j+i]->value);
+                    else
+                        mvprintw((offy+j)-5, offx+(i*2), "%d", grid[GRIDX*j+i]->value);
                 } else if(grid[GRIDX*j+i]->hidden == 1 && grid[GRIDX*j+i]->marked == 0){
                     // for hidden cells
                     if(highlight == GRIDX*j+i){
@@ -383,6 +390,7 @@ int main(void){
             xoffset = 19;
         if(totaltime < 10)
         mvprintw((erow/2)+1, (ecol-xoffset)/2, "Elapsed %d seconds", (int)(end-start));
+        refresh();
         getch();
     }
     endwin();
