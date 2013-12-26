@@ -126,6 +126,23 @@ void checkmines(cell **grid){
     }
 }
 
+void checkreveal(cell **grid){
+    int i, j;
+    int cont = 1;
+    for(j = 1; j < GRIDY+1; j++){
+        for(i = 1; i < GRIDX+1; i++){
+            int v = GRIDX*j+i;
+            if(grid[v]->hidden == 1 && grid[v]->marked == 0)
+                cont = 0;
+        }
+    }
+    if(cont == 1 && playing == 1){
+        // everything is revealed and game is still being played
+        playing = 0;
+        exitmsg = 2;
+    }
+}
+
 void printgrid(cell **grid, int highlight, int act){
     /*
      * act:
@@ -239,13 +256,15 @@ void printgrid(cell **grid, int highlight, int act){
 }
 
 void printexit(){
+    int row, col;
+    getmaxyx(stdscr, row, col);
     if(playing == 0){
         if(exitmsg == 1){
             // lost
-            printw("You lose, sorry...");
+            mvprintw(row/2, (col-18)/2, "You lose, sorry...");
         } else if(exitmsg == 2){
             // won
-            printw("Congratulations, you won!");
+            mvprintw(row/2, (col-25)/2, "Congratulations, you won!");
         }
     }
     refresh();
@@ -307,6 +326,7 @@ int main(void){
         clear();
         printgrid(grid, curr, act);
         checkmines(grid);
+        checkreveal(grid);
     }
     clear();
     printexit();
