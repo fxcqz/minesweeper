@@ -13,11 +13,18 @@
 #define GRIDY 10
 #define MINES 8
 
+/* grid constants */
 static const int gbufx = GRIDX + 2;
 static const int gbufy = GRIDY + 2;
 static const int debug = 0;
 
+/* runtime vars */
 static int playing = 1;
+/*
+ * 1 - failure
+ * 2 - complete
+*/
+static int exitmsg = 0;
 
 typedef struct {
     int value, hidden, marked;
@@ -102,6 +109,23 @@ void addmines(cell **grid){
     }
 }
 
+void checkmines(cell **grid){
+    int i, j;
+    int count;
+    for(j = 1; j < GRIDY+1; j++){
+        for(i = 1; i < GRIDX+1; i++){
+            int v = GRIDX*j+i;
+            if(grid[v]->value == -1 && grid[v]->marked == 1){
+                count++;
+            }
+        }
+    }
+    if(count == MINES){
+        playing = 0;
+        exitmsg = 2;
+    }
+}
+
 void printgrid(cell **grid, int highlight, int act){
     /*
      * act:
@@ -113,8 +137,13 @@ void printgrid(cell **grid, int highlight, int act){
         // can't reveal marked cells
         if(grid[highlight]->marked != 1)
             grid[highlight]->hidden = 0;
+        if(grid[highlight]->value == -1){
+            exitmsg = 1;
+            playing = 0;
+        }
     }
     if(act == 2){
+        // unmark cell if its marked
         if(grid[highlight]->marked == 1)
             grid[highlight]->marked = 0;
         else
@@ -209,6 +238,19 @@ void printgrid(cell **grid, int highlight, int act){
     refresh();
 }
 
+void printexit(){
+    if(playing == 0){
+        if(exitmsg == 1){
+            // lost
+            printw("You lose, sorry...");
+        } else if(exitmsg == 2){
+            // won
+            printw("Congratulations, you won!");
+        }
+    }
+    refresh();
+}
+
 int main(void){
     srand(time(NULL));
     cell **grid = initgrid();
@@ -264,9 +306,11 @@ int main(void){
         }
         clear();
         printgrid(grid, curr, act);
+        checkmines(grid);
     }
     clear();
-    printw("game over");
+    printexit();
+    getch();
     endwin();
     return 0;
 }
