@@ -298,6 +298,8 @@ int main(void){
     keypad(stdscr, TRUE);
     printgrid(grid, curr, act);
     refresh();
+    time_t start;
+    time(&start);
     while(playing == 1){
         act = 0;
         c   = wgetch(stdscr);
@@ -360,6 +362,8 @@ int main(void){
         checkmines(grid);
         checkreveal(grid);
     }
+    time_t end;
+    time(&end);
     clear();
     if(exitmsg == 3){
         // just end
@@ -367,6 +371,18 @@ int main(void){
         return 0;
     } else {
         printexit();
+        int erow, ecol;
+        getmaxyx(stdscr, erow, ecol);
+        int totaltime = (int)(end-start);
+        int xoffset = 0;
+        if(totaltime < 10)
+            xoffset = 17;
+        else if(totaltime < 100)
+            xoffset = 18;
+        else
+            xoffset = 19;
+        if(totaltime < 10)
+        mvprintw((erow/2)+1, (ecol-xoffset)/2, "Elapsed %d seconds", (int)(end-start));
         getch();
     }
     endwin();
