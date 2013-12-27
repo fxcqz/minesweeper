@@ -12,9 +12,9 @@
 #include <time.h>
 #include <ncurses.h>
 
-#define GRIDX 10
-#define GRIDY 10
-#define MINES 8
+#define GRIDX 9
+#define GRIDY 9
+#define MINES 10
 
 /* grid constants */
 static const int gbufx = GRIDX + 2;
