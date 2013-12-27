@@ -135,7 +135,9 @@ int canrevealmine(cell **grid, int loc){
     /*
      * return 1 if we can cont
     */
+    // grid constraints
     if(loc > GRIDX && loc <= GRIDX*GRIDY+GRIDX){
+        // value constraints
         if(grid[loc]->value != -1 && grid[loc]->hidden == 1 && grid[loc]->marked == 0){
             return 1;
         }
@@ -148,81 +150,56 @@ void revealadj(cell **grid, int loc){
     if(grid[loc]->value == 0){
         while(canrevealmine(grid, (loc-(GRIDX*c))-GRIDX)){
             // top
-            grid[(loc-(GRIDX*c))-GRIDX]->hidden = 0;
-            revealadj(grid, loc-(GRIDX*c)-GRIDX);
-            c += 1;
-        }
-        c = 0;
-        while(canrevealmine(grid, (loc-(GRIDX*c))-GRIDX-1)){
-            // top left
-            if(((loc-(GRIDX*c))-GRIDX-1)%GRIDX != 0){
-                grid[(loc-(GRIDX*c))-GRIDX-1]->hidden = 0;
-                revealadj(grid, loc-(GRIDX*c)-GRIDX-1);
+            if(grid[loc-(GRIDX*c)-GRIDX]->value == 0){
+                grid[(loc-(GRIDX*c))-GRIDX]->hidden = 0;
+                revealadj(grid, loc-(GRIDX*c)-GRIDX);
+            } else {
+                grid[loc-(GRIDX*c)-GRIDX]->hidden = 0;
+                break;
             }
             c += 1;
         }
         c = 0;
-        while(canrevealmine(grid, (loc-(GRIDX*c))-GRIDX+1)){
-            // top right
-            if(loc%GRIDX != 0){
-                grid[(loc-(GRIDX*c))-GRIDX+1]->hidden = 0;
-                revealadj(grid, loc-(GRIDX*c)-GRIDX+1);
+        while(canrevealmine(grid, (loc+(GRIDX*c))+GRIDX)){
+            // bot
+            if(grid[loc+(GRIDX*c)+GRIDX]->value == 0){
+                grid[(loc+(GRIDX*c)+GRIDX)]->hidden = 0;
+                revealadj(grid, loc+(GRIDX*c)+GRIDX);
+            } else {
+                grid[(loc+(GRIDX*c)+GRIDX)]->hidden = 0;
+                break;
             }
             c += 1;
         }
         c = 0;
         while(canrevealmine(grid, (loc-(1*c)-1))){
             // left
-            if((loc-(1*c)-1)%GRIDX != 0){
-                grid[(loc-(1*c)-1)]->hidden = 0;
+            // wrap constraint
+            if((loc+(GRIDX-1))%GRIDX != 0){
+                if(grid[loc-(1*c)-1]->value == 0){
+                    grid[(loc-(1*c)-1)]->hidden = 0;
+                    revealadj(grid, loc-(1*c)-1);
+                } else {
+                    grid[loc-(1*c)-1]->hidden = 0;
+                    break;
+                }
             }
-            revealadj(grid, loc-(1*c)-1);
             c += 1;
         }
         c = 0;
-        while(canrevealmine(grid, (loc+(1*c)+1))){
+        // dont _really_ know, but it works
+        if(loc%GRIDX != 0){
             // right
-            if((loc+(1*c))%GRIDX != 0){
-                grid[(loc+(1*c)+1)]->hidden = 0;
+            while(canrevealmine(grid, (loc+(1*c)+1))){
+                if(grid[(loc+(1*c)+1)]->value == 0){
+                    grid[(loc+(1*c)+1)]->hidden = 0;
+                    revealadj(grid, (loc+(1*c)+1));
+                }  else {
+                    grid[(loc+(1*c)+1)]->hidden = 1;
+                    break;
+                }
+                c += 1;
             }
-            revealadj(grid, loc+(1*c)+1);
-            c += 1;
-        }
-        c = 0;
-        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX-1))){
-            // bot left
-            if((loc+(GRIDX*c)+GRIDX-1)%GRIDX != 0){
-                grid[(loc+(GRIDX*c)+GRIDX-1)]->hidden = 0;
-                revealadj(grid, loc+(GRIDX*c)+GRIDX-1);
-            }
-            c += 1;
-        }
-        c = 0;
-        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX+1))){
-            // bot right
-            if((loc+(GRIDX*c)+GRIDX+1)%GRIDX != 0){
-                grid[(loc+(GRIDX*c)+GRIDX+1)]->hidden = 0;
-                revealadj(grid, loc+(GRIDX*c)+GRIDX+1);
-            }
-            c += 1;
-        }
-        c = 0;
-        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX))){
-            // bot 
-            if((loc+(GRIDX*c)+GRIDX)%GRIDX != 0){
-                grid[(loc+(GRIDX*c)+GRIDX)]->hidden = 0;
-            }
-            revealadj(grid, loc+(GRIDX*c)+GRIDX);
-            c += 1;
-        }
-        c = 0;
-        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX-1))){
-            // bot left
-            if((loc+(GRIDX*c)+GRIDX-1)%GRIDX != 0){
-                grid[(loc+(GRIDX*c)+GRIDX-1)]->hidden = 0;
-                revealadj(grid, loc+(GRIDX*c)+GRIDX-1);
-            }
-            c += 1;
         }
     }
 }
@@ -290,9 +267,10 @@ void printgrid(cell **grid, int highlight, int act){
             for(i = 1; i < GRIDX+1; i++){
                 if(debug){
                     if(grid[GRIDX*j+i]->value == -1)
-                        mvprintw((offy+j), offx+(i*2), "M", grid[GRIDX*j+i]->value);
+                        mvprintw((offy+j), offx+(i*4), "M");
                     else
-                        mvprintw((offy+j), offx+(i*2), "%d", grid[GRIDX*j+i]->value);
+                        //mvprintw((offy+j), offx+(i*2), "%d", grid[GRIDX*j+i]->value);
+                        mvprintw((offy+j), offx+(i*4), "%d", GRIDX*j+i);
                 } else if(grid[GRIDX*j+i]->hidden == 1 && grid[GRIDX*j+i]->marked == 0){
                     // for hidden cells
                     if(highlight == GRIDX*j+i){
@@ -369,9 +347,10 @@ void printgrid(cell **grid, int highlight, int act){
     refresh();
 }
 
-void printexit(){
+void printexit(time_t start, time_t end){
     int row, col;
     getmaxyx(stdscr, row, col);
+    int total = (int)(end-start);
     if(playing == 0){
         if(exitmsg == 1){
             // lost
@@ -380,12 +359,23 @@ void printexit(){
             // won
             mvprintw(row/2, (col-25)/2, "Congratulations, you won!");
         }
+        int xoffset = 0;
+        if(total < 10)
+            xoffset = 24;
+        else if(total < 100 && total > 9)
+            xoffset = 25;
+        else
+            xoffset = 26;
+        mvprintw((row/2)+1, (col-xoffset)/2, "You played for %d seconds", total);
     }
     refresh();
 }
 
 int main(void){
-    srand(time(NULL));
+    if(debug)
+        srand(4);
+    else
+        srand(time(NULL));
     cell **grid = initgrid();
     creategrid(grid);
     addmines(grid);
@@ -474,20 +464,7 @@ int main(void){
         endwin();
         return 0;
     } else {
-        printexit();
-        int erow, ecol;
-        getmaxyx(stdscr, erow, ecol);
-        int totaltime = (int)(end-start);
-        int xoffset = 0;
-        if(totaltime < 10)
-            xoffset = 17;
-        else if(totaltime < 100)
-            xoffset = 18;
-        else
-            xoffset = 19;
-        if(totaltime < 10)
-        mvprintw((erow/2)+1, (ecol-xoffset)/2, "Elapsed %d seconds", (int)(end-start));
-        refresh();
+        printexit(start, end);
         getch();
     }
     endwin();
