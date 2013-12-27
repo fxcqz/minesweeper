@@ -195,7 +195,10 @@ void revealadj(cell **grid, int loc){
                     grid[(loc+(1*c)+1)]->hidden = 0;
                     revealadj(grid, (loc+(1*c)+1));
                 }  else {
-                    grid[(loc+(1*c)+1)]->hidden = 1;
+                    if((loc+(1*c))%(GRIDX) == 0)
+                        grid[(loc+(1*c)+1)]->hidden = 1;
+                    else
+                        grid[(loc+(1*c)+1)]->hidden = 0;
                     break;
                 }
                 c += 1;
@@ -257,7 +260,7 @@ void printgrid(cell **grid, int highlight, int act){
         int offy = (row / 2) -(GRIDX/2);
         start_color();
         /* colours */
-        init_pair(1, COLOR_RED,     COLOR_BLACK); /* failure */
+        init_pair(1, COLOR_RED,     COLOR_BLACK); /* flag */
         init_pair(2, COLOR_GREEN,   COLOR_BLACK); /* 1s */
         init_pair(3, COLOR_YELLOW,  COLOR_BLACK); /* 2s */
         init_pair(4, COLOR_BLUE,    COLOR_BLACK); /* 3s */
