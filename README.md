@@ -8,6 +8,9 @@ Compile with:
 Controls:
 
 Arrow Keys - Movement
+
 R - Reveal cell
+
 F - Flag cell
+
 Esc - Exit game
