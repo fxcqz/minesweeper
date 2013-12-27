@@ -136,7 +136,7 @@ int canrevealmine(cell **grid, int loc){
      * return 1 if we can cont
     */
     if(loc > GRIDX && loc <= GRIDX*GRIDY+GRIDX){
-        if(grid[loc]->value == 0 && grid[loc]->hidden == 1 && grid[loc]->marked == 0){
+        if(grid[loc]->value != -1 && grid[loc]->hidden == 1 && grid[loc]->marked == 0){
             return 1;
         }
     }
@@ -276,8 +276,8 @@ void printgrid(cell **grid, int highlight, int act){
         quitscr = 1;
         mvprintw(row/2, (col-36)/2, "Are you sure you want to quit? [Y\\n]");
     } else {
-        int offx = (col - 20) / 2;
-        int offy = row / 2;
+        int offx = (col - (2*GRIDX)) / 2;
+        int offy = (row / 2) -(GRIDX/2);
         start_color();
         /* colours */
         init_pair(1, COLOR_RED,     COLOR_BLACK); /* failure */
@@ -290,29 +290,29 @@ void printgrid(cell **grid, int highlight, int act){
             for(i = 1; i < GRIDX+1; i++){
                 if(debug){
                     if(grid[GRIDX*j+i]->value == -1)
-                        mvprintw((offy+j)-5, offx+(i*2), "M", grid[GRIDX*j+i]->value);
+                        mvprintw((offy+j), offx+(i*2), "M", grid[GRIDX*j+i]->value);
                     else
-                        mvprintw((offy+j)-5, offx+(i*2), "%d", grid[GRIDX*j+i]->value);
+                        mvprintw((offy+j), offx+(i*2), "%d", grid[GRIDX*j+i]->value);
                 } else if(grid[GRIDX*j+i]->hidden == 1 && grid[GRIDX*j+i]->marked == 0){
                     // for hidden cells
                     if(highlight == GRIDX*j+i){
                         // highlight this square
                         wattron(stdscr, A_REVERSE);
-                        mvprintw((offy+j)-5, offx+(i*2), "-");
+                        mvprintw((offy+j), offx+(i*2), "-");
                         wattroff(stdscr, A_REVERSE);
                     } else {
-                        mvprintw((offy+j)-5, offx+(i*2), "-");
+                        mvprintw((offy+j), offx+(i*2), "-");
                     }
                 } else if(grid[GRIDX*j+i]->marked == 1){
                     // for marked cells
                     if(highlight == GRIDX*j+i){
                         // highlighted
                         wattron(stdscr, A_REVERSE);
-                        mvprintw((offy+j)-5, offx+(i*2), "F");
+                        mvprintw((offy+j), offx+(i*2), "F");
                         wattroff(stdscr, A_REVERSE);
                     } else {
                         attron(COLOR_PAIR(1));
-                        mvprintw((offy+j)-5, offx+(i*2), "F");
+                        mvprintw((offy+j), offx+(i*2), "F");
                         attroff(COLOR_PAIR(1));
                     }
                 } else {
@@ -321,44 +321,44 @@ void printgrid(cell **grid, int highlight, int act){
                         // highlight this square
                         wattron(stdscr, A_REVERSE);
                         if(val == -1)
-                            mvprintw((offy+j)-5, offx+(i*2), "M", val);
+                            mvprintw((offy+j), offx+(i*2), "M", val);
                         else
-                            mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                            mvprintw((offy+j), offx+(i*2), "%d", val);
                         wattroff(stdscr, A_REVERSE);
                     } else {
                         switch(val){
                             case -1:
                                 attron(COLOR_PAIR(1));
-                                mvprintw((offy+j)-5, offx+(i*2), "M");
+                                mvprintw((offy+j), offx+(i*2), "M");
                                 attroff(COLOR_PAIR(1));
                                 break;
                             case 1:
                                 attron(COLOR_PAIR(2));
-                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                mvprintw((offy+j), offx+(i*2), "%d", val);
                                 attroff(COLOR_PAIR(2));
                                 break;
                             case 2:
                                 attron(COLOR_PAIR(3));
-                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                mvprintw((offy+j), offx+(i*2), "%d", val);
                                 attroff(COLOR_PAIR(3));
                                 break;
                             case 3:
                                 attron(COLOR_PAIR(4));
-                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                mvprintw((offy+j), offx+(i*2), "%d", val);
                                 attroff(COLOR_PAIR(4));
                                 break;
                             case 4:
                                 attron(COLOR_PAIR(5));
-                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                mvprintw((offy+j), offx+(i*2), "%d", val);
                                 attroff(COLOR_PAIR(5));
                                 break;
                             case 5:
                                 attron(COLOR_PAIR(6));
-                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                mvprintw((offy+j), offx+(i*2), "%d", val);
                                 attroff(COLOR_PAIR(6));
                                 break;
                             default:
-                                mvprintw((offy+j)-5, offx+(i*2), "%d", val);
+                                mvprintw((offy+j), offx+(i*2), "%d", val);
                         }
                     }
                 }
