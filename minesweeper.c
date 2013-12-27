@@ -390,7 +390,7 @@ int main(void){
     creategrid(grid);
     addmines(grid);
     // ncurses vars
-    int curr = 11;
+    int curr = GRIDX+1;
     int act  = 0;
     int c;
     // ncurses start
@@ -436,13 +436,13 @@ int main(void){
                         curr -= GRIDX;
                     break;
                 case KEY_RIGHT:
-                    if((curr)%10 == 0)
+                    if((curr)%GRIDX == 0)
                         curr = curr - (GRIDX-1);
                     else
                         curr += 1;
                     break;
                 case KEY_LEFT:
-                    if((curr-1)%10 == 0)
+                    if((curr-1)%GRIDX == 0)
                         curr = curr + (GRIDX-1);
                     else
                         curr -= 1;
