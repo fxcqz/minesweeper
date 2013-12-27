@@ -131,6 +131,102 @@ void checkmines(cell **grid){
     }
 }
 
+int canrevealmine(cell **grid, int loc){
+    /*
+     * return 1 if we can cont
+    */
+    if(loc > GRIDX && loc <= GRIDX*GRIDY+GRIDX){
+        if(grid[loc]->value == 0 && grid[loc]->hidden == 1 && grid[loc]->marked == 0){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void revealadj(cell **grid, int loc){
+    int c = 0;
+    if(grid[loc]->value == 0){
+        while(canrevealmine(grid, (loc-(GRIDX*c))-GRIDX)){
+            // top
+            grid[(loc-(GRIDX*c))-GRIDX]->hidden = 0;
+            revealadj(grid, loc-(GRIDX*c)-GRIDX);
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc-(GRIDX*c))-GRIDX-1)){
+            // top left
+            if(((loc-(GRIDX*c))-GRIDX-1)%GRIDX != 0){
+                grid[(loc-(GRIDX*c))-GRIDX-1]->hidden = 0;
+                revealadj(grid, loc-(GRIDX*c)-GRIDX-1);
+            }
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc-(GRIDX*c))-GRIDX+1)){
+            // top right
+            if(loc%GRIDX != 0){
+                grid[(loc-(GRIDX*c))-GRIDX+1]->hidden = 0;
+                revealadj(grid, loc-(GRIDX*c)-GRIDX+1);
+            }
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc-(1*c)-1))){
+            // left
+            if((loc-(1*c)-1)%GRIDX != 0){
+                grid[(loc-(1*c)-1)]->hidden = 0;
+            }
+            revealadj(grid, loc-(1*c)-1);
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc+(1*c)+1))){
+            // right
+            if((loc+(1*c))%GRIDX != 0){
+                grid[(loc+(1*c)+1)]->hidden = 0;
+            }
+            revealadj(grid, loc+(1*c)+1);
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX-1))){
+            // bot left
+            if((loc+(GRIDX*c)+GRIDX-1)%GRIDX != 0){
+                grid[(loc+(GRIDX*c)+GRIDX-1)]->hidden = 0;
+                revealadj(grid, loc+(GRIDX*c)+GRIDX-1);
+            }
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX+1))){
+            // bot right
+            if((loc+(GRIDX*c)+GRIDX+1)%GRIDX != 0){
+                grid[(loc+(GRIDX*c)+GRIDX+1)]->hidden = 0;
+                revealadj(grid, loc+(GRIDX*c)+GRIDX+1);
+            }
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX))){
+            // bot 
+            if((loc+(GRIDX*c)+GRIDX)%GRIDX != 0){
+                grid[(loc+(GRIDX*c)+GRIDX)]->hidden = 0;
+            }
+            revealadj(grid, loc+(GRIDX*c)+GRIDX);
+            c += 1;
+        }
+        c = 0;
+        while(canrevealmine(grid, (loc+(GRIDX*c)+GRIDX-1))){
+            // bot left
+            if((loc+(GRIDX*c)+GRIDX-1)%GRIDX != 0){
+                grid[(loc+(GRIDX*c)+GRIDX-1)]->hidden = 0;
+                revealadj(grid, loc+(GRIDX*c)+GRIDX-1);
+            }
+            c += 1;
+        }
+    }
+}
+
 void checkreveal(cell **grid){
     int i, j;
     int cont = 1;
@@ -163,6 +259,7 @@ void printgrid(cell **grid, int highlight, int act){
             exitmsg = 1;
             playing = 0;
         }
+        revealadj(grid, highlight);
     }
     if(act == 2){
         // unmark cell if its marked
