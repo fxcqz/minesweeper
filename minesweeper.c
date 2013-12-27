@@ -370,6 +370,7 @@ void printexit(time_t start, time_t end){
         else
             xoffset = 26;
         mvprintw((row/2)+1, (col-xoffset)/2, "You played for %d seconds", total);
+        mvprintw((row/2)+2, (col-21)/2, "Press any key to exit");
     }
     refresh();
 }
